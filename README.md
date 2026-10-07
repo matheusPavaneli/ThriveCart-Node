@@ -3,7 +3,8 @@
 A proof of concept of Acme Widget Co's sales basket in Node 24 and TypeScript.
 Products come from a catalogue, delivery is charged by spend tier, and offers
 take money off. Every rule is injected, so the basket itself knows none of
-Acme's prices.
+Acme's prices. A small JSON API serves the basket, and a React UI prices
+baskets through it.
 
 ## Running it
 
@@ -11,10 +12,14 @@ Needs Node 24 and pnpm (`corepack enable` provides the pinned version).
 
 ```sh
 pnpm install
+pnpm dev         # API on :8000, UI on http://localhost:5173
 pnpm test        # every package's tests
 pnpm typecheck
 pnpm --filter acme-widget-basket-api basket B01 B01 R01 R01 R01
 ```
+
+The UI proxies `/api` to `http://localhost:8000`; set `API_URL` to point it
+elsewhere, and `PORT` to move the API.
 
 The CLI prices any basket and prints the breakdown:
 
@@ -65,15 +70,19 @@ This is exactly what `acmeBasket()` builds. Amounts are integer cents, so
 api/
 ├── bin/basket.ts                CLI
 └── src/
+    ├── main.ts                  process entry: logger, port, shutdown
+    ├── http/                    HttpApi (routes as a plain function), node:http adapter
     ├── basket.ts                Basket: add(), total(), quote(); PricingRules
     ├── money.ts                 integer cents
     ├── acme-widget-co.ts        Acme's products and rules, wired in one place
     ├── catalogue/               Catalogue, InMemoryCatalogue, Product, UnknownProduct
     ├── delivery/                DeliveryChargeRule, TieredDeliveryCharge
     └── offer/                   Offer, BuyOneGetSecondHalfPrice
+web/                             React UI (Vite, Vitest); every amount comes from the API
 ```
 
-Tests sit next to the code they test (`*.test.ts`) and run on `node:test`.
+Tests sit next to the code they test (`*.test.ts`) and run on `node:test`
+in the API and Vitest in the UI.
 
 - **`Basket`** depends on three abstractions: a `Catalogue` to look products
   up, a `DeliveryChargeRule` to price delivery, and any number of `Offer`s.
@@ -94,6 +103,31 @@ Tests sit next to the code they test (`*.test.ts`) and run on `node:test`.
 2. discount = sum of every offer's discount, capped at the subtotal
 3. delivery = delivery rule applied to subtotal − discount
 4. total = subtotal − discount + delivery
+
+## HTTP API
+
+Amounts are integer cents. Errors are `{ "error": { "code", "message" } }`.
+
+| Request | Response |
+| --- | --- |
+| `GET /api/catalogue` | products, delivery tiers and offers (each offer describes itself) |
+| `POST /api/quote` `{ "codes": ["R01", "R01"] }` | `subtotal`, `discount`, `delivery`, `total` and `nextTier`, the spend that reaches cheaper delivery |
+
+An unknown code is 422 `unknown_product`; malformed JSON or non-string codes
+are 400; more than 200 codes or a body over 8 KB is 413; a wrong method is 405
+with `Allow`. `HttpApi.handle()` is a plain function of method, path and body,
+so routes are tested without a server; `server.ts` only adapts `node:http` to
+it, caps the body, sets timeouts and turns an unexpected error into a logged
+500 that does not leak its message. Request bodies are validated with zod and
+logs are structured (pino); those two are the API's only runtime dependencies.
+
+## The UI
+
+`web/` is a single screen: pick quantities or load one of the brief's example
+baskets, and the quote (subtotal, offer, delivery, total) updates from
+`POST /api/quote`. A meter shows how far the basket is from cheaper delivery.
+The UI holds no prices of its own; responses are checked with zod, and a
+stopped API shows a retry message instead of stale totals.
 
 ## Design decisions
 
