@@ -1,0 +1,17 @@
+{
+  "name": "acme-widget-basket-api",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test \"src/**/*.test.ts\" \"bin/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "basket": "node bin/basket.ts"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "typescript": "7.0.2"
+  }
+}
