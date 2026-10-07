@@ -55,7 +55,7 @@ function ProductsPlaceholder() {
     <ul aria-hidden="true" className="grid gap-x-8 gap-y-6 lg:grid-cols-3">
       {[0, 1, 2].map((i) => (
         <li key={i} className="grid grid-cols-[56px_1fr] items-center gap-4 lg:grid-cols-1 lg:gap-y-5">
-          <div className="aspect-square w-14 rounded-pill bg-ink/5 lg:w-full lg:max-w-[168px]" />
+          <div className="aspect-square w-14 rounded-pill bg-ink/5 lg:w-full lg:max-w-42" />
           <div className="grid gap-2">
             <div className="h-5 w-32 rounded-control bg-ink/5" />
             <div className="h-4 w-20 rounded-control bg-ink/5" />
@@ -134,7 +134,7 @@ export function App() {
   };
 
   return (
-    <div className="mx-auto max-w-[1200px] px-4 pb-32 sm:px-8 lg:pb-16">
+    <div className="mx-auto max-w-300 px-4 pb-32 sm:px-8 lg:pb-16">
       <header className="py-6">
         <Wordmark />
       </header>
