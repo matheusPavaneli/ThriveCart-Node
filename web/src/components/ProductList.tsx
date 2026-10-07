@@ -24,9 +24,9 @@ export function ProductList({ products, counts, halfPriceCodes, onAdd }: Product
         return (
           <li key={product.code} className="grid grid-cols-[56px_1fr_auto] items-center gap-x-4 lg:grid-cols-1 lg:content-start lg:items-start lg:gap-y-5">
             {channel ? (
-              <WidgetLens channel={channel} count={count} className="w-14 lg:w-full lg:max-w-[168px]" />
+              <WidgetLens channel={channel} count={count} className="w-14 lg:w-full lg:max-w-42" />
             ) : (
-              <div aria-hidden="true" className="aspect-square w-14 rounded-pill bg-slate/20 lg:w-full lg:max-w-[168px]" />
+              <div aria-hidden="true" className="aspect-square w-14 rounded-pill bg-slate/20 lg:w-full lg:max-w-42" />
             )}
             <div className="min-w-0">
               <h3 className="text-lg font-semibold leading-tight">{product.name}</h3>
